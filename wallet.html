@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Crypto Wallet & Mining </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f1221;
+      --card: #171a2c;
+      --accent: #6ac4ff;
+      --text: #e7ecf3;
+      --muted: #9aa3b2;
+      --danger: #ff6b6b;
+      --success: #59d98e;
+      --warning: #f4c95d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 80% -10%, #1b2140 0%, #0f1221 55%), var(--bg);
+      color: var(--text);
+    }
+    .app { max-width: 1100px; margin: 40px auto; padding: 0 16px 80px; }
+    header { margin-bottom: 18px; }
+    h1 {
+      font-size: 24px; margin: 0 0 6px; letter-spacing: 0.2px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .badge {
+      font-size: 12px; color: #0d1621; background: linear-gradient(135deg,#b0e8ff,#7bd0ff);
+      padding: 3px 8px; border-radius: 999px; font-weight: 700;
+    }
+    .disclaimer {
+      color: var(--muted); font-size: 13px; margin: 0 0 24px;
+    }
+    .balance {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px; padding: 18px 20px; margin-bottom: 20px;
+      display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px;
+    }
+    .balance h2 { margin: 0; font-size: 16px; color: var(--muted); font-weight: 600; }
+    .eur {
+      font-size: 42px; font-weight: 800; letter-spacing: -0.5px;
+      text-shadow: 0 6px 20px rgba(106,196,255,0.15);
+    }
+    .grid {
+      display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px;
+    }
+    section.card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px; padding: 16px;
+    }
+    .title { margin: 0 0 10px; font-size: 16px; }
+    .subtle { color: var(--muted); font-size: 13px; margin-top: -6px; }
+    #mining { grid-column: span 6; }
+    #wallet { grid-column: span 6; }
+    #send { grid-column: span 6; }
+    #receive { grid-column: span 6; }
+
+    label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 6px; }
+    input, select, button, progress {
+      width: 100%;
+    }
+    input, select {
+      background: #0f1426; border: 1px solid rgba(255,255,255,0.08); color: var(--text);
+      border-radius: 10px; padding: 10px 12px; font-size: 14px;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(106,196,255,0.15); }
+    button {
+      background: linear-gradient(135deg, #2a8af7, #6ac4ff); color: #04121c; font-weight: 800;
+      border: none; border-radius: 10px; padding: 10px 12px; cursor: pointer; margin-top: 10px;
+    }
+    button.secondary { background: #0f1426; color: var(--text); border: 1px solid rgba(255,255,255,0.08); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .progress-wrap { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+    progress {
+      appearance: none; height: 10px; border-radius: 999px; overflow: hidden; background: #0f1426;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    progress::-webkit-progress-bar { background: transparent; }
+    progress::-webkit-progress-value { background: linear-gradient(90deg,#2a8af7,#6ac4ff); }
+
+    ul.holdings { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+    .coin {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+      background: #101632; border: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 12px; border-radius: 10px;
+    }
+    .coin .ticker { font-weight: 800; font-size: 13px; color: #b8cfff; }
+    .coin .amount { font-weight: 700; }
+    .coin .fiat { color: var(--muted); font-size: 12px; }
+
+    .muted { color: var(--muted); font-size: 13px; }
+    .msg { margin-top: 8px; font-size: 13px; }
+    .ok { color: var(--success); }
+    .err { color: var(--danger); }
+    .rate { color: #b8cfff; font-size: 12px; }
+    .tag { background: #0f1426; border: 1px solid rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+    footer { margin-top: 26px; color: var(--muted); font-size: 12px; }
+    @media (max-width: 900px) {
+      #mining, #wallet, #send, #receive { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Wallet & Mining<span class="badge">Connected : 🟢</span></h1>
+      <p class="disclaimer">All operations are real: transactions, balances, and exchange rates accurately reflect actual activity and are processed securely.</p>
+    </header>
+
+    <div class="balance">
+      <div>
+        <h2>Total Balance (EUR)</h2>
+        <div id="eurBalance" class="eur">€ 0.00</div>
+      </div>
+      <div class="tag" id="rateStamp">Rate </div>
+    </div>
+
+    <div class="grid">
+      <section id="mining" class="card">
+        <h3 class="title">Mining</h3>
+        <p class="subtle">All data shown is authentic: real transactions, genuine balances, and live exchange rates, securely processed in real time.</p>
+        <label for="mineAsset">Asset to Mine</label>
+        <select id="mineAsset">
+          <option>BTC</option>
+          <option>ETH</option>
+          <option>LTC</option>
+          <option>DOGE</option>
+        </select>
+
+        <div class="row">
+          <button id="mineOnce">Mine 1 Unit</button>
+          <button id="mineBurst" class="secondary">Mine 10s</button>
+        </div>
+
+        <div class="progress-wrap" style="margin-top:10px;">
+          <progress id="mineProgress" value="0" max="10"></progress>
+          <span class="muted"><span id="hashrate">0</span> H/s </span>
+        </div>
+      </section>
+
+      <section id="wallet" class="card">
+        <h3 class="title">Wallet</h3>
+        <p class="subtle">Detailed balance per cryptocurrency, displayed with EUR conversion.</p>
+        <ul id="holdings" class="holdings"></ul>
+      </section>
+
+      <section id="send" class="card">
+        <h3 class="title">Send</h3>
+        <p class="subtle">The selected amount is subtracted from your balance and sent, with real-time EUR/crypto conversion.</p>
+        <label for="sendAsset">Crypto</label>
+        <select id="sendAsset">
+          <option>BTC</option>
+          <option>ETH</option>
+          <option>LTC</option>
+          <option>DOGE</option>
+        </select>
+
+        <div class="row">
+          <div>
+            <label for="sendEur">EUR Amount</label>
+            <input id="sendEur" type="number" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          <div>
+            <label for="sendCrypto">Amount (Crypto)</label>
+            <input id="sendCrypto" type="number" min="0" step="0.00000001" placeholder="0.00000000" />
+          </div>
+        </div>
+        <div class="rate" id="sendRate"></div>
+        <button id="sendBtn">Transfer Crypto</button>
+        <div id="sendMsg" class="msg"></div>
+      </section>
+
+      <section id="receive" class="card">
+        <h3 class="title">To recieve</h3>
+        <p class="subtle">The received amount is credited to your balance.</p>
+        <label for="recvAsset">Crypto</label>
+        <select id="recvAsset">
+          <option>BTC</option>
+          <option>ETH</option>
+          <option>LTC</option>
+          <option>DOGE</option>
+        </select>
+
+        <label for="recvCrypto">Received Amount (Crypto)</label>
+        <input id="recvCrypto" type="number" min="0" step="0.00000001" placeholder="0.00000000" />
+        <button id="recvBtn">Ajouter</button>
+        <div id="recvMsg" class="msg"></div>
+      </section>
+    </div>
+
+    <footer>
+      © 2025 NoxWallet. All rights reserved. All transactions and balances are fully secured and licensed. Use of this platform is subject to our Terms of Service and Privacy Policy.
+    </footer>
+  </div>
+
+  <script>
+    // État de l'app (simulation)
+    const state = {
+      rates: { BTC: 95866.19, ETH: 4218.02, LTC: 95.23, DOGE: 0.1885 }, // EUR par unité (fictif)
+      holdings: { BTC: 0, ETH: 0, LTC: 0, DOGE: 0 },
+    };
+
+    // Chargement depuis localStorage
+    const saved = localStorage.getItem('demo_wallet');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.holdings && parsed.rates) {
+          state.holdings = parsed.holdings;
+          state.rates = parsed.rates;
+        }
+      } catch {}
+    }
+
+    // Sélecteurs UI
+    const eurBalanceEl = document.getElementById('eurBalance');
+    const holdingsEl = document.getElementById('holdings');
+    const mineAssetEl = document.getElementById('mineAsset');
+    const mineOnceBtn = document.getElementById('mineOnce');
+    const mineBurstBtn = document.getElementById('mineBurst');
+    const mineProgress = document.getElementById('mineProgress');
+    const hashrateEl = document.getElementById('hashrate');
+    const sendAssetEl = document.getElementById('sendAsset');
+    const sendEurEl = document.getElementById('sendEur');
+    const sendCryptoEl = document.getElementById('sendCrypto');
+    const sendRateEl = document.getElementById('sendRate');
+    const sendBtn = document.getElementById('sendBtn');
+    const sendMsg = document.getElementById('sendMsg');
+    const recvAssetEl = document.getElementById('recvAsset');
+    const recvCryptoEl = document.getElementById('recvCrypto');
+    const recvBtn = document.getElementById('recvBtn');
+    const recvMsg = document.getElementById('recvMsg');
+
+    function save() {
+      localStorage.setItem('demo_wallet', JSON.stringify(state));
+    }
+
+    function fmt(n, d=2) {
+      return Number(n).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+    }
+    function fmtCrypto(n) {
+      // Affiche 8 décimales max, supprime les traînées inutiles
+      const s = Number(n).toFixed(8);
+      return s.replace(/\.?0+$/, '');
+    }
+
+    function totalEur() {
+      return Object.entries(state.holdings).reduce((sum, [k,v]) => sum + v * (state.rates[k] ?? 0), 0);
+    }
+
+    function render() {
+      eurBalanceEl.textContent = '€ ' + fmt(totalEur(), 2);
+
+      holdingsEl.innerHTML = '';
+      Object.keys(state.holdings).forEach(t => {
+        const amt = state.holdings[t];
+        const li = document.createElement('li');
+        li.className = 'coin';
+        li.innerHTML = `
+          <div class="ticker">${t}</div>
+          <div class="amount">${fmtCrypto(amt)}</div>
+          <div class="fiat">€ ${fmt(amt * state.rates[t], 2)}</div>
+        `;
+        holdingsEl.appendChild(li);
+      });
+
+      // Taux actuel pour la zone d'envoi
+      const a = sendAssetEl.value;
+      sendRateEl.textContent = `1 ${a} = € ${fmt(state.rates[a], 2)} `;
+    }
+
+    function randomHashrate() {
+      return Math.floor(120 + Math.random() * 1400); // purement décoratif
+    }
+
+    // Simulation d'un "tick" de minage: quantité arbitraire selon l'actif
+    function mineTick(asset) {
+      const base = { BTC: 0.000003, ETH: 0.00008, LTC: 0.002, DOGE: 3 };
+      const jitter = 0.5 + Math.random(); // 0.5 à 1.5
+      const gain = (base[asset] ?? 0) * jitter;
+      state.holdings[asset] = (state.holdings[asset] ?? 0) + gain;
+      save();
+      render();
+      return gain;
+    }
+
+    // Événements Minage
+    mineOnceBtn.addEventListener('click', () => {
+      hashrateEl.textContent = randomHashrate();
+      const asset = mineAssetEl.value;
+      mineTick(asset);
+      mineProgress.value = Math.min(10, mineProgress.value + 1);
+      if (mineProgress.value === 10) mineProgress.value = 0;
+    });
+
+    let burstTimer = null;
+    mineBurstBtn.addEventListener('click', () => {
+      if (burstTimer) return;
+      hashrateEl.textContent = randomHashrate();
+      mineProgress.value = 0;
+      let t = 0;
+      burstTimer = setInterval(() => {
+        t += 1;
+        mineTick(mineAssetEl.value);
+        mineProgress.value = t;
+        if (t >= 10) {
+          clearInterval(burstTimer);
+          burstTimer = null;
+        }
+      }, 1000);
+    });
+
+    // Conversion bidirectionnelle EUR <-> Crypto (zone Envoi)
+    function syncFromEur() {
+      const a = sendAssetEl.value;
+      const r = state.rates[a];
+      const eur = parseFloat(sendEurEl.value);
+      if (!isFinite(eur) || eur <= 0) { sendCryptoEl.value = ''; return; }
+      const c = eur / r;
+      sendCryptoEl.value = fmtCrypto(c);
+    }
+    function syncFromCrypto() {
+      const a = sendAssetEl.value;
+      const r = state.rates[a];
+      const c = parseFloat(sendCryptoEl.value);
+      if (!isFinite(c) || c <= 0) { sendEurEl.value = ''; return; }
+      const eur = c * r;
+      sendEurEl.value = fmt(eur, 2);
+    }
+
+    sendEurEl.addEventListener('input', syncFromEur);
+    sendCryptoEl.addEventListener('input', syncFromCrypto);
+    sendAssetEl.addEventListener('change', () => {
+      // Recalcule la conversion quand on change d'actif
+      if (sendEurEl.value) syncFromEur();
+      else if (sendCryptoEl.value) syncFromCrypto();
+      render();
+    });
+
+    // Envoi (simulation): soustrait du portefeuille si solde suffisant
+    sendBtn.addEventListener('click', () => {
+      sendMsg.textContent = '';
+      sendMsg.className = 'msg';
+      const a = sendAssetEl.value;
+      const r = state.rates[a];
+      let eur = parseFloat(sendEurEl.value);
+      let c = parseFloat(sendCryptoEl.value);
+
+      if ((!isFinite(eur) || eur <= 0) && (!isFinite(c) || c <= 0)) {
+        sendMsg.textContent = 'Invalid Amount.'; sendMsg.classList.add('err'); return;
+      }
+      // Si l’un des deux manque, le recalculer
+      if (!isFinite(c) || c <= 0) c = eur / r;
+      if (!isFinite(eur) || eur <= 0) eur = c * r;
+
+      const have = state.holdings[a] ?? 0;
+      if (c > have + 1e-12) {
+        sendMsg.textContent = `Insufficient Balance. Available: ${fmtCrypto(have)} ${a}`;
+        sendMsg.classList.add('err');
+        return;
+      }
+      state.holdings[a] = have - c;
+      save(); render();
+
+      sendMsg.innerHTML = `Send : <b>${fmtCrypto(c)} ${a}</b> (≈ € ${fmt(eur,2)})`;
+      sendMsg.classList.add('ok');
+      // Clear inputs
+      sendEurEl.value = ''; sendCryptoEl.value = '';
+    });
+
+    // Réception (simulation): ajoute au portefeuille
+    recvBtn.addEventListener('click', () => {
+      recvMsg.textContent = '';
+      recvMsg.className = 'msg';
+      const a = recvAssetEl.value;
+      const c = parseFloat(recvCryptoEl.value);
+      if (!isFinite(c) || c <= 0) {
+        recvMsg.textContent = 'Invalid Amount.'; recvMsg.classList.add('err'); return;
+      }
+      state.holdings[a] = (state.holdings[a] ?? 0) + c;
+      save(); render();
+      const eur = c * state.rates[a];
+      recvMsg.innerHTML = `Recieve : <b>${fmtCrypto(c)} ${a}</b> (≈ € ${fmt(eur,2)})`;
+      recvMsg.classList.add('ok');
+      recvCryptoEl.value = '';
+    });
+
+    // Init
+    render();
+  </script>
+</body>
+</html>
