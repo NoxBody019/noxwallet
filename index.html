@@ -74,6 +74,25 @@
     .tag { background: #0f1426; border: 1px solid rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 999px; font-size: 12px; }
     footer { margin-top: 26px; color: var(--muted); font-size: 12px; }
     @media (max-width: 900px) { #mining, #wallet, #send, #receive { grid-column: span 12; } }
+    /* Titre principal du header seulement */
+.main-title {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* espace entre le titre et la bulle */
+  font-size: 24px;
+  margin: 0 0 16px;
+}
+.connected-bubble {
+  background: #6ac4ff33;
+  color: #6ac4ff;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 10px; /* rapproche du texte */
+}
+
+
   </style>
 </head>
 <body>
@@ -106,7 +125,10 @@
 <div class="app" id="app">
   <header>
     <button id="logoutBtn" class="secondary" style="position:absolute; top:20px; right:20px; width:auto; padding:8px 12px; font-size:14px;">Déconnexion</button>
-    <h1>Wallet & Mining<span class="badge">Connected : 🟢</span></h1>
+     <h1 class="main-title">
+    <span class="title-text">Wallet & Mining</span>
+    <span class="connected-bubble">Connected : 🟢</span>
+  </h1>
     <p class="disclaimer">All operations are real: transactions, balances, and exchange rates accurately reflect actual activity and are processed securely.</p>
   </header>
 
