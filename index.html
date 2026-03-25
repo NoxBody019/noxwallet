@@ -272,6 +272,26 @@
       address:'',
       receptionEnabled:true
     };
+
+    async function fetchLiveRates(){
+      try{
+        const res=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,litecoin,dogecoin&vs_currencies=eur');
+        if(!res.ok) throw new Error('API non disponible');
+        const data=await res.json();
+        state.rates.BTC = Number(data.bitcoin.eur);
+        state.rates.ETH = Number(data.ethereum.eur);
+        state.rates.LTC = Number(data.litecoin.eur);
+        state.rates.DOGE = Number(data.dogecoin.eur);
+        document.getElementById('rateStamp').textContent = `RATES: BTC ${state.rates.BTC}€ • ETH ${state.rates.ETH}€ • LTC ${state.rates.LTC}€ • DOGE ${state.rates.DOGE}€`;
+        render();
+      }catch(err){
+        console.warn('Impossible de charger les prix en direct', err);
+        document.getElementById('rateStamp').textContent = 'RATES API unavailable';
+      }
+    }
+
+    fetchLiveRates();
+    setInterval(fetchLiveRates, 60_000); // refresh minute to minute
     const saved=localStorage.getItem('demo_wallet');
     if(saved){
       try{
