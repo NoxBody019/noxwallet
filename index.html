@@ -209,7 +209,11 @@
         <option>DOGE</option>
       </select>
 
-      <button id="recvBtn">Dépôt réseau</button>
+      <div class="row" style="margin-top:10px;">
+        <button id="recvToggleBtn" class="secondary">Désactiver la réception</button>
+        <button id="recvBtn">Dépôt réseau</button>
+      </div>
+      <div id="recvStatus" class="muted" style="margin-top:8px;">Réception activée</div>
       <div id="recvMsg" class="msg"></div>
     </section>
   </div>
@@ -265,7 +269,8 @@
     const state={
       rates:{BTC:95866.19,ETH:4218.02,LTC:95.23,DOGE:0.1885},
       holdings:{BTC:0,ETH:0,LTC:0,DOGE:0},
-      address:''
+      address:'',
+      receptionEnabled:true
     };
     const saved=localStorage.getItem('demo_wallet');
     if(saved){
@@ -273,6 +278,7 @@
         const p=JSON.parse(saved);
         if(p&&p.holdings) state.holdings=p.holdings;
         if(p&&p.address) state.address=p.address;
+        if(p&&typeof p.receptionEnabled === 'boolean') state.receptionEnabled=p.receptionEnabled;
       }catch{}
     }
     if(!state.address){
@@ -295,6 +301,7 @@
     const sendMsg=document.getElementById('sendMsg');
     const recvAssetEl=document.getElementById('recvAsset');
     const recvBtn=document.getElementById('recvBtn');
+    const recvToggleBtn=document.getElementById('recvToggleBtn');
     const recvMsg=document.getElementById('recvMsg');
 
     function save(){ localStorage.setItem('demo_wallet', JSON.stringify(state)); }
@@ -304,6 +311,9 @@
     function render(){
       eurBalanceEl.textContent='€ '+fmt(totalEur(),2);
       document.getElementById('walletAddress').textContent = state.address;
+      document.getElementById('recvStatus').textContent = state.receptionEnabled ? 'Réception activée' : 'Réception désactivée';
+      document.getElementById('recvToggleBtn').textContent = state.receptionEnabled ? 'Désactiver la réception' : 'Activer la réception';
+      recvBtn.disabled = !state.receptionEnabled;
       renderHoldings();
     }
     function renderHoldings(){
@@ -374,7 +384,19 @@
     });
 
     // Receive
+    recvToggleBtn.addEventListener('click',()=>{
+      state.receptionEnabled = !state.receptionEnabled;
+      recvMsg.textContent = state.receptionEnabled ? 'Réception activée' : 'Réception désactivée';
+      recvMsg.className = state.receptionEnabled ? 'msg ok' : 'msg err';
+      render(); save();
+    });
+
     recvBtn.addEventListener('click',()=>{
+      if(!state.receptionEnabled){
+        recvMsg.textContent='Réception désactivée. Activez-la pour recevoir des crypto.';
+        recvMsg.className='msg err';
+        return;
+      }
       const coin=recvAssetEl.value;
       const amount = Number((Math.random() * 0.05 + 0.01).toFixed(8));
       state.holdings[coin] += amount;
