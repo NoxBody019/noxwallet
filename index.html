@@ -139,6 +139,9 @@
     </div>
     <div class="tag" id="rateStamp">Rate </div>
   </div>
+  <div class="balance" style="padding:12px; margin-bottom:16px;">
+    <strong>Adresse wallet :</strong> <span id="walletAddress">Génération...</span>
+  </div>
 
   <div class="grid">
     <section id="mining" class="card">
@@ -197,8 +200,8 @@
 
     <section id="receive" class="card">
       <h3 class="title">Réception réseau</h3>
-      <p class="subtle">Les crypto ne peuvent pas être ajoutées manuellement (mode réaliste). Seuls le minage et les dépôts réseau sont acceptés.</p>
-      <label for="recvAsset">Crypto</label>
+      <p class="subtle">Votre adresse wallet est identifiée, les dépôts sont crédités sur cette adresse comme sur un vrai service.</p>
+      <label for="recvAsset">Crypto à recevoir</label>
       <select id="recvAsset">
         <option>BTC</option>
         <option>ETH</option>
@@ -206,7 +209,6 @@
         <option>DOGE</option>
       </select>
 
-      <p class="muted" style="margin-top:10px;">Ajout manuel désactivé pour éviter le comportement “larp”.</p>
       <button id="recvBtn">Dépôt réseau</button>
       <div id="recvMsg" class="msg"></div>
     </section>
@@ -260,9 +262,23 @@
 
   // --- Wallet / Mining ---
   function initApp(){
-    const state={rates:{BTC:95866.19,ETH:4218.02,LTC:95.23,DOGE:0.1885},holdings:{BTC:0,ETH:0,LTC:0,DOGE:0}};
+    const state={
+      rates:{BTC:95866.19,ETH:4218.02,LTC:95.23,DOGE:0.1885},
+      holdings:{BTC:0,ETH:0,LTC:0,DOGE:0},
+      address:''
+    };
     const saved=localStorage.getItem('demo_wallet');
-    if(saved){ try{ const p=JSON.parse(saved); if(p&&p.holdings) state.holdings=p.holdings; }catch{} }
+    if(saved){
+      try{
+        const p=JSON.parse(saved);
+        if(p&&p.holdings) state.holdings=p.holdings;
+        if(p&&p.address) state.address=p.address;
+      }catch{}
+    }
+    if(!state.address){
+      // adresse pseudo-réelle pour l'expé demonstration
+      state.address='0x'+Math.floor(Math.random()*1e16).toString(16).padStart(16,'0');
+    }
 
     const eurBalanceEl=document.getElementById('eurBalance');
     const holdingsEl=document.getElementById('holdings');
@@ -285,7 +301,11 @@
     function fmt(n,d=2){return Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});}
     function fmtCrypto(n){return Number(n).toFixed(8).replace(/\.?0+$/,'');}
     function totalEur(){return Object.entries(state.holdings).reduce((sum,[k,v])=>sum+v*(state.rates[k]??0),0);}
-    function render(){ eurBalanceEl.textContent='€ '+fmt(totalEur(),2); renderHoldings(); }
+    function render(){
+      eurBalanceEl.textContent='€ '+fmt(totalEur(),2);
+      document.getElementById('walletAddress').textContent = state.address;
+      renderHoldings();
+    }
     function renderHoldings(){
       holdingsEl.innerHTML='';
       Object.entries(state.holdings).forEach(([k,v])=>{
