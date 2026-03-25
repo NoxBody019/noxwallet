@@ -209,6 +209,9 @@
         <option>DOGE</option>
       </select>
 
+      <label for="recvAmount">Montant</label>
+      <input id="recvAmount" type="number" min="0" step="0.00000001" placeholder="0.00000000" />
+
       <div class="row" style="margin-top:10px;">
         <button id="recvToggleBtn" class="secondary">Désactiver la réception</button>
         <button id="recvBtn">Dépôt réseau</button>
@@ -320,6 +323,7 @@
     const sendBtn=document.getElementById('sendBtn');
     const sendMsg=document.getElementById('sendMsg');
     const recvAssetEl=document.getElementById('recvAsset');
+    const recvAmountEl=document.getElementById('recvAmount');
     const recvBtn=document.getElementById('recvBtn');
     const recvToggleBtn=document.getElementById('recvToggleBtn');
     const recvMsg=document.getElementById('recvMsg');
@@ -418,10 +422,17 @@
         return;
       }
       const coin=recvAssetEl.value;
-      const amount = Number((Math.random() * 0.05 + 0.01).toFixed(8));
+      const manualAmount = Number(recvAmountEl.value) || 0;
+      const amount = manualAmount > 0 ? manualAmount : Number((Math.random() * 0.05 + 0.01).toFixed(8));
+      if(amount <= 0){
+        recvMsg.textContent='Veuillez saisir un montant valide.';
+        recvMsg.className='msg err';
+        return;
+      }
       state.holdings[coin] += amount;
       recvMsg.textContent = `Dépôt réseau confirmé : +${fmtCrypto(amount)} ${coin}`;
       recvMsg.className = 'msg ok';
+      recvAmountEl.value='';
       render(); save();
     });
 
